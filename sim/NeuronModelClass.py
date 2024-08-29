@@ -17,7 +17,7 @@ from NrnHelper import *
 
 
 class NeuronModel:
-    def __init__(self,ais_nav16_fac, ais_nav12_fac, mod_dir = './Neuron_Model_12HMM16HH/',#'./Neuron_Model_12HH16HMM/',#'./Neuron_Model_HH/', 
+    def __init__(self,ais_nav16_fac, ais_nav12_fac, mod_dir ='./Neuron_Model_12HH16HH/',#'./Neuron_Model_12HH16HH/',#'./Neuron_Model_HH/',
                       
                       update = None, ##TF If this is true, mechs are updated with update_mech_from_dict. Turn to false if you don't want update ### maybe not working???????
                       na12name = 'na12_HMM_TF100923',
@@ -143,8 +143,16 @@ class NeuronModel:
         h.dend_na16 = 0 ##TF020624
         h.dend_k = 0.0043685576 * dend_K
         
+
+        ##062424 original params
+        # h.soma_na12 = 3.24E-02 * soma_nav12 
+        # h.soma_na16 = 7.88E-02 * soma_nav16
+        
+        ##TF062424 testing equal conductances
         h.soma_na12 = 3.24E-02 * soma_nav12 
-        h.soma_na16 = 7.88E-02 * soma_nav16 
+        h.soma_na16 = 3.24E-02 * soma_nav16
+
+
         
       
         h.soma_K = 0.21330453 * soma_K
@@ -213,91 +221,29 @@ class NeuronModel:
         h.soma_na12 = h.soma_na12 * nav12 * soma_nav12
         
         # h.ais_na12 = h.ais_na12 * nav12 * ais_nav12
-        h.ais_na12 = h.ais_na12 * ais_nav12 ##TF020624 decouple ais Nav1.2 from overall nav12
+        
+        if nav12 !=0:
+            h.ais_na12 = (h.ais_na12 * ais_nav12)/nav12 ##TF020624 decouple ais Nav1.2 from overall nav12
+        else:
+            h.ais_na12 = h.ais_na12 *ais_nav12
 
+        # h.ais_na16 = h.ais_na16 * nav16 * ais_nav16
+        if nav16 !=0:
+            h.ais_na16 = (h.ais_na16 * ais_nav16)/nav16 ##TF020624 decouple ais Nav1.6 from overall nav16
+        else:
+            h.ais_na12 = h.ais_na16 * ais_nav16
+        
         h.dend_na16 = h.dend_na16 * nav16 * dend_nav16
         h.soma_na16 = h.soma_na16 * nav16 * soma_nav16
         
-        # h.ais_na16 = h.ais_na16 * nav16 * ais_nav16
-        h.ais_na16 = h.ais_na16 * ais_nav16 ##TF020624 decouple ais Nav1.6 from overall nav16
-        
         h.working()
         
-        h.load_file("/Users/mollyleitner/Desktop/M1_channelopathies_HMM/sim/Neuron_Model_12HMM16HH/printSh.hoc") #change on local computer
+        # h.load_file("/global/homes/t/tfenton/Neuron_general-2/Neuron_Model_12HMM16HH/printSh.hoc")
         
-        h.printVals12HHWT()
-        h.printValsWT16()
-        h.printValsMUT16()
+        # h.printVals12HHWT() ##TF will only work with HH mod files that have params like 'sh', 'tha', 'thi' etc.
+        # h.printValsWT16()
+        # h.printValsMUT16()
             
-     
-        
-        
-        
-             
-        #Function for determining and plotting the distribution of Na channels in axon.
-        def chandensities (name = f"/global/homes/t/tfenton/Neuron_general-2/Plots/12HMM16HH_TF/ManuscriptFigs/Restart030824/4-FixModMistake_HH/22-changeIh-{ais_nav16_fac}"):
-            distances = []
-            na12_densities = []
-            na16_densities = []
-            na12mut_densities = []
-            na16mut_densities = []
-            sections = []
-            
-
-            for sec in h.cell.axon:
-                for seg in sec:
-                    print(seg)
-                    section = f'h.distance.{seg}'
-                    distance = h.distance(0,seg)
-                    print(f'Distance_SEG{distance}')
-                    distances.append(distance)
-                    sections.append(section)
-
-                    na12_gbar = seg.gbar_na12
-                    print(na12_gbar)
-                    na12_densities.append(na12_gbar)
-
-                    na16_gbar = seg.gbar_na16
-                    print(na16_gbar)
-                    na16_densities.append(na16_gbar)
-
-                    na12mut_gbar = seg.gbar_na12mut
-                    na12mut_densities.append(na12mut_gbar)
-
-                    na16mut_gbar = seg.gbar_na16mut
-                    na16mut_densities.append(na16mut_gbar)
-
-            print(distances)
-            print(na12_densities)
-            print(na16_densities)
-
-            #Save data to dataframes to write to csv.
-            df1 = pd.DataFrame(distances)
-            df2 = pd.DataFrame(na12_densities)
-            df3 = pd.DataFrame(na16_densities)
-            df4 = pd.DataFrame(na12mut_densities)
-            df5 = pd.DataFrame(na16mut_densities)
-            df6 = pd.DataFrame(sections)
-            df = pd.concat([df1,df2,df4,df3,df5,df6], axis=1, keys=['Distance','na12','na12mut','na16','na16mut','sections'])
-            # df.to_csv(name+'.csv')
-            
-            #Plot line graph of different contributions
-            fig1, ax = plt.subplots()
-            plt.plot(df['na12'],label='Nav12', color='blue')
-            plt.plot(df['na12mut'],label='Nav12_Mut', color='cyan', linestyle='dashed')
-            plt.plot(df['na16'],label='Nav16', color='red')
-            plt.plot(df['na16mut'],label='Nav16_Mut', color='orange', alpha=0.5, linestyle='dashed')
-            plt.legend()
-            plt.xticks(range(1,len(distances)), rotation=270)
-            plt.xlabel('Segment of Axon')
-            plt.ylabel('gbar')
-            plt.title("Distribution of Nav12 and Nav16")
-            plt.savefig(name+".png", dpi=400)
-
-        # chandensities() ##TF uncomment to run function and plot channel densities in axon[0]
-
-        
-
 
         os.chdir(run_dir)
 
@@ -306,9 +252,21 @@ class NeuronModel:
         
         #############################################################
         ##Add update_mech_from_dict and update_param_value here #####
+        ##TF052124 need to comment out update_mech_from_dict if using HH model -- Fixed this issue##
         if update:
             print ("UPDATING ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-            update_param_value(self,['SKv3_1'],'mtaumul',6)
+            print(eval('h.psection()'))
+            # print(eval('h.cell.axon[0].psection()'))
+            update_param_value(self,['SKv3_1'],'mtaumul',6) ##TF041924 ORIGINAL val=6
+            # update_param_value(self,['SKv3_1'],'mtaumul',0.5) ##TF041924
+            
+            # multiply_param(self,['SK_E2'],'gSK_E2bar',0.5) ##TF041924 multiplies gbar of SKE2
+            # multiply_param(self,['Ca_LVAst'],'gCa_LVAstbar',0.5) ##TF041924 multiplies gbar of Ca_LVAst
+            # multiply_param(self,['Ca_LVAst'],'gCa_LVAstbar',2) ##TF041924 multiplies gbar of Ca_LVAst
+            
+            multiply_param(self,['Ca_HVA'],'gCa_HVAbar',0.1) ##TF070124 multiplies gbar of Ca_HVA. ***This was not present for HH model (aka value was 1)
+            
+            
 
             self.na12wt_mech = [na12mechs[0]] 
             self.na12mut_mech = [na12mechs[1]]
@@ -321,38 +279,40 @@ class NeuronModel:
             p_fn_na12 = f'{params_folder}{na12name}.txt'  
             p_fn_na12_mech = f'{params_folder}{na12mut_name}.txt'
             print(f'using wt_file params {na12name}')
-            self.na12_p = update_mech_from_dict(self, p_fn_na12, self.na12wt_mech)
+            self.na12_p = update_mech_from_dict(self, p_fn_na12, self.na12wt_mech) ###
             print(eval("h.psection()")) 
             print(f'using mut_file params {na12mut_name}')
-            self.na12_pmech = update_mech_from_dict(self, p_fn_na12_mech, self.na12mut_mech) #update_mech_from_dict(mdl,dict_fn,mechs,input_dict = False) 2nd arg (dict) updates 3rd (mech)
+            self.na12_pmech = update_mech_from_dict(self, p_fn_na12_mech, self.na12mut_mech) #update_mech_from_dict(mdl,dict_fn,mechs,input_dict = False) 2nd arg (dict) updates 3rd (mech) ###
             print(eval("h.psection()"))
             
+            #Updates gbar in na12 and na12mut mechs with value in nav12. Updates all gbars in all sections including all segments in AIS
             update_mod_param(self,['na12','na12mut'],nav12)
             
-            h.load_file("/global/homes/t/tfenton/Neuron_general-2/Neuron_Model_12HMM16HH/printSh.hoc")
-            h.printVals12HHWT()
+            # h.load_file("/global/homes/t/tfenton/Neuron_general-2/Neuron_Model_12HMM16HH/printSh.hoc")
+            # h.printVals12HHWT()
 
             #Adding ability to update with new Na16 mechs ##TF021424
             p_fn_na16 = f'{params_folder}{na16name}.txt'
             p_fn_na16_mech = f'{params_folder}{na16mut_name}.txt'
             
             print(f'using na16wt_file params {na16name}')
-            self.na16_p = update_mech_from_dict(self, p_fn_na16,self.na16wt_mech)
+            self.na16_p = update_mech_from_dict(self, p_fn_na16,self.na16wt_mech) ###
             print(eval("h.psection()"))
             ##TF030624 Can load file below and run h.printValsWT to debug if mod file is getting updated or not
-            h.load_file("/global/homes/t/tfenton/Neuron_general-2/Neuron_Model_12HMM16HH/printSh.hoc")
-            h.printValsWT16()
+            # h.load_file("/global/homes/t/tfenton/Neuron_general-2/Neuron_Model_12HMM16HH/printSh.hoc")
+            # h.printValsWT16()
             
             print(f'using na16mut_file params {na16mut_name}')
-            self.na16_pmech = update_mech_from_dict(self, p_fn_na16_mech,self.na16mut_mech)
+            self.na16_pmech = update_mech_from_dict(self, p_fn_na16_mech,self.na16mut_mech) ###
             print(eval("h.psection()"))
 
             update_mod_param(self,['na16','na16mut'],nav16)
-
-
+            
+            print(eval("h.psection()"))
+            # print(eval('h.cell.axon[0].psection()'))
             ##TF030624 Can load file below and run h.printValsWT to debug if mod file is getting updated or not
-            h.load_file("/global/homes/t/tfenton/Neuron_general-2/Neuron_Model_12HMM16HH/printSh.hoc")
-            h.printValsMUT16()
+            # h.load_file("/global/homes/t/tfenton/Neuron_general-2/Neuron_Model_12HMM16HH/printSh.hoc")
+            # h.printValsMUT16()
             # print(h("topology()"))
 
             
@@ -367,9 +327,85 @@ class NeuronModel:
             #     # print("sh",sec.gIhbar_Ih)
             ############################################################
         
-    
-    def init_stim(self, sweep_len = 800, stim_start = 100, stim_dur = 500, amp = 0.3, dt = 0.1): #Default args
+    #Function for determining and plotting the distribution of Na channels in axon.
+    def chandensities (name='AISchandensities',root_path_out = './Plots/12HMM16HMM/ChannelDensities'):
+        
+        # name = 'AIS_chan_densities'
+        
+        if not os.path.exists(root_path_out):
+                os.makedirs(root_path_out)
+                
+        distances = []
+        na12_densities = []
+        na16_densities = []
+        na12mut_densities = []
+        na16mut_densities = []
+        sections = []
+            
+
+        for sec in h.cell.axon:
+            for seg in sec:
+                print(seg)
+                section = f'h.distance.{seg}'
+                distance = h.distance(0,seg)
+                print(f'Distance_SEG{distance}')
+                distances.append(distance)
+                sections.append(section)
+
+                na12_gbar = seg.gbar_na12
+                print(na12_gbar)
+                na12_densities.append(na12_gbar)
+
+                na16_gbar = seg.gbar_na16
+                print(na16_gbar)
+                na16_densities.append(na16_gbar)
+
+                na12mut_gbar = seg.gbar_na12mut
+                na12mut_densities.append(na12mut_gbar)
+
+                na16mut_gbar = seg.gbar_na16mut
+                na16mut_densities.append(na16mut_gbar)
+            
+            # gbar_na12_soma = h.cell.soma.gbar_na12 ##TF adding na12 soma gbar label to plot, need to plot it later
+
+        print(distances)
+        print(na12_densities)
+        print(na16_densities)
+
+        #Save data to dataframes to write to csv.
+        df1 = pd.DataFrame(distances)
+        df2 = pd.DataFrame(na12_densities)
+        df3 = pd.DataFrame(na16_densities)
+        df4 = pd.DataFrame(na12mut_densities)
+        df5 = pd.DataFrame(na16mut_densities)
+        df6 = pd.DataFrame(sections)
+        df = pd.concat([df1,df2,df4,df3,df5,df6], axis=1, keys=['Distance','na12','na12mut','na16','na16mut','sections'])
+        # df.to_csv(name+'.csv')
+        
+        #Plot line graph of different contributions
+        fig1, ax = plt.subplots()
+        plt.plot(df['na12'],label='Nav12', color='blue')
+        plt.plot(df['na12mut'],label='Nav12_Mut', color='cyan', linestyle='dashed')
+        plt.plot(df['na16'],label='Nav16', color='red')
+        plt.plot(df['na16mut'],label='Nav16_Mut', color='orange', alpha=0.5, linestyle='dashed')
+        plt.legend()
+        plt.xticks(range(1,len(distances)), rotation=270)
+        plt.xlabel('Segment of Axon')
+        plt.ylabel('gbar')
+        plt.title("Distribution of Nav12 and Nav16")
+        plt.savefig(f'{root_path_out}/{name}.png', dpi=400)
+
+        # chandensities() ##TF uncomment to run function and plot channel densities in axon[0]
+
     #def init_stim(self, sweep_len = 800, stim_start = 30, stim_dur = 500, amp = 0.3, dt = 0.1): #Na16 zoom into single peak args
+    
+    # def init_stim(self, sweep_len = 800, stim_start = 100, stim_dur = 500, amp = 0.3, dt = 0.1): ##TF050924 Changed to default for HH figs for grant 061424 ##This is a good new setting
+    # def init_stim(self, sweep_len = 200, stim_start = 30, stim_dur = 100, amp = 0.3, dt = 0.1): ##TF060724 Using to get AP initiation/propogation to simulate less
+    # def init_stim(self, sweep_len = 60, stim_start = 30, stim_dur = 100, amp = 0.3, dt = 0.1): ##TF061424 getting single AP for SFARI grant
+    # def init_stim(self, sweep_len = 150, stim_start = 30, stim_dur = 100, amp = 0.5, dt = 0.1): ##TF071524 trying to speed up tuning
+    def init_stim(self, sweep_len = 300, stim_start = 30, stim_dur = 100, amp = 0.5, dt = 0.1): ##TF071524 trying to speed up tuning
+    # def init_stim(self, sweep_len = 1000, stim_start = 30, stim_dur = 500, amp = 0.5, dt = 0.1): ##TF071524 trying to speed up tuning
+    
 
         # updates the stimulation params used by the model
         # time values are in ms
@@ -527,6 +563,11 @@ class NeuronModel:
         Vm = np.zeros(timesteps, dtype=np.float64)
         I = {current_type: np.zeros(timesteps, dtype=np.float64) for current_type in current_types}
         ionic = {ionic_type : np.zeros(timesteps,dtype=np.float64) for ionic_type in ionic_types}
+
+        ##TF062724 Adding 8state state values for every timestep
+        states12 = [["c1","c2","c3","i1","i2","i3","i4","o"]]
+        states16 = [["c1","c2","c3","i1","i2","i3","i4","o"]]
+        
         #print(f"I : {I}")
         stim = np.zeros(timesteps, dtype=np.float64)
         t = np.zeros(timesteps, dtype=np.float64)
@@ -553,6 +594,7 @@ class NeuronModel:
         for i in range(timesteps):
            
             Vm[i] =eval(volt_var)
+             
             try :
                 for current_type in current_types:
                     I[current_type][i] = eval(curr_vars[current_type])
@@ -568,7 +610,39 @@ class NeuronModel:
 
             stim[i] = h.st.amp
             t[i] = i*h.dt / 1000
+            
+
+        ###
+        ##TF062724 State values for 8 state HMM model
+            states12.append([h.cell.soma[0].c1_na12,
+                       h.cell.soma[0].c2_na12,
+                       h.cell.soma[0].c3_na12,
+                       h.cell.soma[0].i1_na12,
+                       h.cell.soma[0].i2_na12,
+                       h.cell.soma[0].i3_na12,
+                       h.cell.soma[0].i4_na12,
+                       h.cell.soma[0].o_na12])
+            
+            states16.append([h.cell.soma[0].c1_na16,
+                       h.cell.soma[0].c2_na16,
+                       h.cell.soma[0].c3_na16,
+                       h.cell.soma[0].i1_na16,
+                       h.cell.soma[0].i2_na16,
+                       h.cell.soma[0].i3_na16,
+                       h.cell.soma[0].i4_na16,
+                       h.cell.soma[0].o_na16])
+        ###
+
             h.fadvance()
+        
+        ###
+        df1 = pd.DataFrame(states12)
+        df2 = pd.DataFrame(states16)
+        df1.to_csv("./Plots/Channel_state_plots/na12_channel_states.csv", header=False,index=False)
+        df2.to_csv("./Plots/Channel_state_plots/na16_channel_states.csv", header=False,index=False)
+        ###
+        
+        
         #print(f"I : {I}")
         return Vm, I, t, stim, ionic
     
@@ -580,3 +654,5 @@ class NeuronModel:
 #######################
 # MAIN
 #######################
+
+
