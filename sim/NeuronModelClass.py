@@ -17,7 +17,7 @@ from NrnHelper import *
 
 
 class NeuronModel:
-    def __init__(self,ais_nav16_fac, ais_nav12_fac, mod_dir ='./Neuron_Model_12HH16HH/',#'./Neuron_Model_12HH16HH/',#'./Neuron_Model_HH/',
+    def __init__(self,ais_nav16_fac, ais_nav12_fac, mod_dir ='./Neuron_Model_12HH16HH/',#'./Neuron_Model_12HH16HH/',#'./Neuron_Model_HH/', 
                       
                       update = None, ##TF If this is true, mechs are updated with update_mech_from_dict. Turn to false if you don't want update ### maybe not working???????
                       na12name = 'na12_HMM_TF100923',
@@ -47,7 +47,8 @@ class NeuronModel:
                       node_na = 1,
                       soma_K=1,
                       dend_K=1,
-                      gpas_all=1
+                      gpas_all=1,
+                      fac=None
                       ):
         run_dir = os.getcwd()
 
@@ -66,75 +67,6 @@ class NeuronModel:
         self.ais = h.cell.axon[0]
         self.axon_proper = h.cell.axon[1]
         
-
-        ### Old model params from GY's branch
-        # h.dend_na12 = 0.012/2
-        # h.dend_na16 = h.dend_na12
-        # h.dend_k = 0.004226 * soma_K
-        
-        # h.soma_na12 = 0.983955/10
-        # h.soma_na16 = h.soma_na12
-        # h.soma_K = 8.396194779331378477e-02 * soma_K
-        
-        # h.ais_na16 = 4
-        # h.ais_na12 = 4
-        # h.ais_ca = 0.00990*4*ais_ca
-        # h.ais_KCa = 0.007104*ais_KCa
-
-        # h.node_na = 2 * node_na
-
-        # h.axon_KP = 0.973538 * axon_Kp
-        # h.axon_KT = 1.7 * axon_Kt
-        # h.axon_K = 1.021945 * axon_K
-        # h.axon_LVA = 0.0014 * axon_LVA
-        # h.axon_HVA = 0.00012 * axon_HVA
-        # h.axon_KCA = 1.8 * axon_Kca
-        
-        # #h.cell.axon[0].gCa_LVAstbar_Ca_LVAst = 0.001376286159287454
-
-        # #h.soma_na12 = h.soma_na12/2
-        # h.naked_axon_na = h.soma_na16/5
-        # h.navshift = -10
-        # h.myelin_na = h.naked_axon_na
-        # h.myelin_K = 0.303472
-        # h.myelin_scale = 10
-        # h.gpas_all = 3e-5 * gpas_all
-        # h.cm_all = 1
-
-        ################## M1 model values from M1 branch
-        # h.dend_na12 = 0.0006922
-        # h.dend_na16 = 0.0009688
-        # h.dend_k = 0.0176729 * soma_K
-        
-        # h.soma_na12 = 0.2891301
-        # h.soma_na16 = 0.1302487
-        # h.soma_K = 0.1193942 * soma_K
-        
-        # h.ais_na16 = 1.4544224
-        # h.ais_na12 = 1.0805419
-        # h.ais_ca = 0.0015458*ais_ca
-        # h.ais_KCa = 0.0027819*ais_KCa
-        
-        # h.node_na = 0.2752364 * node_na
-
-        # h.axon_KP = 0.1498821 * axon_Kp
-        # h.axon_KT = 1.1798011 * axon_Kt
-        # h.axon_K = 0.1146702 * axon_K
-        # h.axon_LVA = 0.0004512 * axon_LVA
-        # h.axon_HVA = 0.0000134 * axon_HVA
-        # h.axon_KCA = 0.6900045 * axon_Kca
-        
-        # #h.cell.axon[0].gCa_LVAstbar_Ca_LVAst = 0.001376286159287454
-
-        # #h.soma_na12 = h.soma_na12/2
-        # h.naked_axon_na = h.soma_na16/5
-        # h.navshift = -10
-        # h.myelin_na = h.naked_axon_na
-        # h.myelin_K = 0.303472
-        # h.myelin_scale = 10
-        # h.gpas_all = 0.0000219 * gpas_all
-        # h.cm_all = 1.4377617
-        
         
         #___________________Kaustubh params
         h.dend_na12 = 2.48E-03 * dend_nav12
@@ -145,12 +77,12 @@ class NeuronModel:
         
 
         ##062424 original params
-        # h.soma_na12 = 3.24E-02 * soma_nav12 
-        # h.soma_na16 = 7.88E-02 * soma_nav16
+        h.soma_na12 = 3.24E-02 * soma_nav12 
+        h.soma_na16 = 7.88E-02 * soma_nav16
         
         ##TF062424 testing equal conductances
-        h.soma_na12 = 3.24E-02 * soma_nav12 
-        h.soma_na16 = 3.24E-02 * soma_nav16
+        # h.soma_na12 = 3.24E-02 * soma_nav12 
+        # h.soma_na16 = 3.24E-02 * soma_nav16
 
 
         
@@ -187,54 +119,26 @@ class NeuronModel:
         #added gpas to see if i_pas changes on currentscape
         #h.gpas_all = .001
 
-        	
-        ############################## Testing 11/17/23, temporarily removed *factor and removing ina_ina from mechs
-        # h.dend_na12 = 2.48E-03  
-        
-        # h.dend_na16 = 5.05E-03 
-        # h.dend_k = 0.0043685576 
-        
-        # h.soma_na12 = 3.24E-02  
-        # h.soma_na16 = 7.88E-02  
-        # h.soma_K = 0.21330453  
-        
-        # h.ais_na16 = 7.2696676  
-        # h.ais_na12 = 1.03E+00  
-        # h.ais_ca = 0.0010125926  
-        # h.ais_KCa = 0.0009423347  
-        
-        # h.node_na = 0.9934221  
-
-        # h.axon_KP = 0.43260124  
-        # h.axon_KT = 1.38801  
-        # h.axon_K = 0.89699364 *2.1 
-        # h.axon_LVA = 0.00034828275  
-        # h.axon_HVA = 1.05E-05  
-        # h.axon_KCA = 0.4008224 
-        
-        # h.gpas_all = 1.34E-05
-        # h.cm_all = 1.6171424	   
-        ##############################
         
 
         h.dend_na12 = h.dend_na12 * nav12 * dend_nav12
         h.soma_na12 = h.soma_na12 * nav12 * soma_nav12
         
         # h.ais_na12 = h.ais_na12 * nav12 * ais_nav12
-        
         if nav12 !=0:
             h.ais_na12 = (h.ais_na12 * ais_nav12)/nav12 ##TF020624 decouple ais Nav1.2 from overall nav12
         else:
             h.ais_na12 = h.ais_na12 *ais_nav12
-
+        
         # h.ais_na16 = h.ais_na16 * nav16 * ais_nav16
         if nav16 !=0:
             h.ais_na16 = (h.ais_na16 * ais_nav16)/nav16 ##TF020624 decouple ais Nav1.6 from overall nav16
         else:
             h.ais_na12 = h.ais_na16 * ais_nav16
-        
+
         h.dend_na16 = h.dend_na16 * nav16 * dend_nav16
         h.soma_na16 = h.soma_na16 * nav16 * soma_nav16
+        
         
         h.working()
         
@@ -244,6 +148,14 @@ class NeuronModel:
         # h.printValsWT16()
         # h.printValsMUT16()
             
+     
+        
+        
+        
+             
+        
+        
+
 
         os.chdir(run_dir)
 
@@ -258,15 +170,7 @@ class NeuronModel:
             print(eval('h.psection()'))
             # print(eval('h.cell.axon[0].psection()'))
             update_param_value(self,['SKv3_1'],'mtaumul',6) ##TF041924 ORIGINAL val=6
-            # update_param_value(self,['SKv3_1'],'mtaumul',0.5) ##TF041924
-            
-            # multiply_param(self,['SK_E2'],'gSK_E2bar',0.5) ##TF041924 multiplies gbar of SKE2
-            # multiply_param(self,['Ca_LVAst'],'gCa_LVAstbar',0.5) ##TF041924 multiplies gbar of Ca_LVAst
-            # multiply_param(self,['Ca_LVAst'],'gCa_LVAstbar',2) ##TF041924 multiplies gbar of Ca_LVAst
-            
-            multiply_param(self,['Ca_HVA'],'gCa_HVAbar',0.1) ##TF070124 multiplies gbar of Ca_HVA. ***This was not present for HH model (aka value was 1)
-            
-            
+            multiply_param(self,['SKv3_1'],'mtaumul',0.85) ##TF083024 updated for hh model
 
             self.na12wt_mech = [na12mechs[0]] 
             self.na12mut_mech = [na12mechs[1]]
@@ -327,21 +231,17 @@ class NeuronModel:
             #     # print("sh",sec.gIhbar_Ih)
             ############################################################
         
-    #Function for determining and plotting the distribution of Na channels in axon.
-    def chandensities (name='AISchandensities',root_path_out = './Plots/12HMM16HMM/ChannelDensities'):
-        
-        # name = 'AIS_chan_densities'
-        
-        if not os.path.exists(root_path_out):
-                os.makedirs(root_path_out)
-                
+    
+   
+#Function for determining and plotting the distribution of Na channels in axon.
+    def chandensities (name = f"/global/homes/t/tfenton/Neuron_general-2/Plots/12HMM16HH_TF/ManuscriptFigs/Restart030824/4-FixModMistake_HH/22-changeIh"):
         distances = []
         na12_densities = []
         na16_densities = []
         na12mut_densities = []
         na16mut_densities = []
         sections = []
-            
+        
 
         for sec in h.cell.axon:
             for seg in sec:
@@ -365,8 +265,6 @@ class NeuronModel:
 
                 na16mut_gbar = seg.gbar_na16mut
                 na16mut_densities.append(na16mut_gbar)
-            
-            # gbar_na12_soma = h.cell.soma.gbar_na12 ##TF adding na12 soma gbar label to plot, need to plot it later
 
         print(distances)
         print(na12_densities)
@@ -393,19 +291,20 @@ class NeuronModel:
         plt.xlabel('Segment of Axon')
         plt.ylabel('gbar')
         plt.title("Distribution of Nav12 and Nav16")
-        plt.savefig(f'{root_path_out}/{name}.png', dpi=400)
-
-        # chandensities() ##TF uncomment to run function and plot channel densities in axon[0]
-
-    #def init_stim(self, sweep_len = 800, stim_start = 30, stim_dur = 500, amp = 0.3, dt = 0.1): #Na16 zoom into single peak args
+        plt.savefig(name+".png", dpi=400)
     
+    
+    # def init_stim(self, sweep_len = 800, stim_start = 30, stim_dur = 500, amp = 0.3, dt = 0.1): #Na16 zoom into single peak args
     # def init_stim(self, sweep_len = 800, stim_start = 100, stim_dur = 500, amp = 0.3, dt = 0.1): ##TF050924 Changed to default for HH figs for grant 061424 ##This is a good new setting
     # def init_stim(self, sweep_len = 200, stim_start = 30, stim_dur = 100, amp = 0.3, dt = 0.1): ##TF060724 Using to get AP initiation/propogation to simulate less
     # def init_stim(self, sweep_len = 60, stim_start = 30, stim_dur = 100, amp = 0.3, dt = 0.1): ##TF061424 getting single AP for SFARI grant
-    # def init_stim(self, sweep_len = 150, stim_start = 30, stim_dur = 100, amp = 0.5, dt = 0.1): ##TF071524 trying to speed up tuning
-    def init_stim(self, sweep_len = 300, stim_start = 30, stim_dur = 100, amp = 0.5, dt = 0.1): ##TF071524 trying to speed up tuning
-    # def init_stim(self, sweep_len = 1000, stim_start = 30, stim_dur = 500, amp = 0.5, dt = 0.1): ##TF071524 trying to speed up tuning
+    # def init_stim(self, sweep_len = 150, stim_start = 30, stim_dur = 120, amp = 0.3, dt = 0.1): ##TF071524 getting 1-3 APs for Roy
     
+    # def init_stim(self, sweep_len = 300, stim_start = 30, stim_dur = 200, amp = 0.3, dt = 0.1): ##TF071524 getting 1-3 APs for Roy
+    def init_stim(self, sweep_len = 800, stim_start = 100, stim_dur = 500, amp = 0.3, dt = 0.1):
+    # def init_stim(self, sweep_len = 800, stim_start = 100, stim_dur = 500, amp = -0.4, dt = 0.1): #HCN hyperpolarizing
+    # def init_stim(self, sweep_len = 800, stim_start = 200, stim_dur = 500, amp = -0.4, dt = 0.1): #HCN Kevin request #2
+    # def init_stim(self, sweep_len = 1000, stim_start = 100, stim_dur = 700, amp = 0.3, dt = 0.1):
 
         # updates the stimulation params used by the model
         # time values are in ms
@@ -612,34 +511,33 @@ class NeuronModel:
             t[i] = i*h.dt / 1000
             
 
-        ###
-        ##TF062724 State values for 8 state HMM model
-            states12.append([h.cell.soma[0].c1_na12,
-                       h.cell.soma[0].c2_na12,
-                       h.cell.soma[0].c3_na12,
-                       h.cell.soma[0].i1_na12,
-                       h.cell.soma[0].i2_na12,
-                       h.cell.soma[0].i3_na12,
-                       h.cell.soma[0].i4_na12,
-                       h.cell.soma[0].o_na12])
-            
-            states16.append([h.cell.soma[0].c1_na16,
-                       h.cell.soma[0].c2_na16,
-                       h.cell.soma[0].c3_na16,
-                       h.cell.soma[0].i1_na16,
-                       h.cell.soma[0].i2_na16,
-                       h.cell.soma[0].i3_na16,
-                       h.cell.soma[0].i4_na16,
-                       h.cell.soma[0].o_na16])
-        ###
 
+        ##TF062724 State values for 8 state HMM model
+        #     states12.append([h.cell.soma[0].c1_na12,
+        #                h.cell.soma[0].c2_na12,
+        #                h.cell.soma[0].c3_na12,
+        #                h.cell.soma[0].i1_na12,
+        #                h.cell.soma[0].i2_na12,
+        #                h.cell.soma[0].i3_na12,
+        #                h.cell.soma[0].i4_na12,
+        #                h.cell.soma[0].o_na12])
+            
+        #     states16.append([h.cell.soma[0].c1_na16,
+        #                h.cell.soma[0].c2_na16,
+        #                h.cell.soma[0].c3_na16,
+        #                h.cell.soma[0].i1_na16,
+        #                h.cell.soma[0].i2_na16,
+        #                h.cell.soma[0].i3_na16,
+        #                h.cell.soma[0].i4_na16,
+        #                h.cell.soma[0].o_na16])
+            
             h.fadvance()
         
         ###
-        df1 = pd.DataFrame(states12)
-        df2 = pd.DataFrame(states16)
-        df1.to_csv("./Plots/Channel_state_plots/na12_channel_states.csv", header=False,index=False)
-        df2.to_csv("./Plots/Channel_state_plots/na16_channel_states.csv", header=False,index=False)
+        # df1 = pd.DataFrame(states12)
+        # df2 = pd.DataFrame(states16)
+        # df1.to_csv("/global/homes/t/tfenton/Neuron_general-2/Plots/Channel_state_plots/na12_channel_states.csv", header=False,index=False)
+        # df2.to_csv("/global/homes/t/tfenton/Neuron_general-2/Plots/Channel_state_plots/na16_channel_states.csv", header=False,index=False)
         ###
         
         
